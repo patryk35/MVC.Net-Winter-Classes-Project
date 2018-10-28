@@ -1,0 +1,12 @@
+﻿@model JobOffer
+
+
+<h2>Offer Details</h2>
+<p>Id: @Model.Id</p>
+<p>Job Title: @Model.JobTitle</p>
+<p>Description: @Model.JobDescription</p>
+<p>Skills Required: @Model.SkillsRequired</p>
+<p>Salary: @Model.Salary</p>
+
+</br>
+@Html.ActionLink("Go back to Job Offers", "Index", "JobOffer")
