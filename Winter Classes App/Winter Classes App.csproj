@@ -7,8 +7,11 @@
   <ItemGroup>
     <PackageReference Include="bootstrap" Version="3.3.7" />
     <PackageReference Include="FontAwesome" Version="4.7.0" />
+	<PackageReference Include="EntityFramework" Version="6.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1Development_1json__JSONSchema="http://json.schemastore.org/ui5-manifest" /></VisualStudio></ProjectExtensions>
 
 </Project>
