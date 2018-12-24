@@ -24,13 +24,13 @@ namespace Winter_Classes_App.Controllers
 
             if (String.IsNullOrEmpty(searchString))
             {
-                return View(await _context.JobOfers
+                return View(await _context.JobOffers
                     .Include(j => j.Company)
                     .ToListAsync()
                     );
             } else
             {
-                return View(await _context.JobOfers
+                return View(await _context.JobOffers
                    .Where(s => s.JobTitle.Contains(searchString) || s.Description.Contains(searchString))
                    .Include(j => j.Company)
                    .ToListAsync()
@@ -46,7 +46,7 @@ namespace Winter_Classes_App.Controllers
                 return NotFound();
             }
 
-            var jobOffer = await _context.JobOfers
+            var jobOffer = await _context.JobOffers
                 .Include(j => j.Company)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (jobOffer == null)
@@ -75,7 +75,8 @@ namespace Winter_Classes_App.Controllers
                 model.Companies = _context.Companies;
                 return View(model);
             }
-            var id = _context.JobOfers.Max(j => j.Id) + 1;
+            //var id = _context.JobOffers.Max(j => j.Id) + 1;
+  
             JobOffer jobOffer = new JobOffer
             {
                 CompanyId = model.CompanyId,
@@ -97,7 +98,7 @@ namespace Winter_Classes_App.Controllers
         {
             if (id == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            var jobOffer = await _context.JobOfers.FindAsync(id);
+            var jobOffer = await _context.JobOffers.Include(j => j.Company).FirstOrDefaultAsync(m => m.Id == id);
             if (jobOffer == null) return new HttpStatusCodeResult(HttpStatusCode.NotFound);
             return View(jobOffer);
         }
@@ -107,7 +108,7 @@ namespace Winter_Classes_App.Controllers
         public async Task<IActionResult> Edit(JobOffer model)
         {
             if (!ModelState.IsValid) return View();
-            var jobOffer = await _context.JobOfers.FindAsync(model.Id);
+            var jobOffer = await _context.JobOffers.FindAsync(model.Id);
             jobOffer.JobTitle = model.JobTitle;
             jobOffer.Description = model.Description;
             jobOffer.SalaryFrom = model.SalaryFrom;
@@ -139,7 +140,7 @@ namespace Winter_Classes_App.Controllers
                 return NotFound();
             }
 
-            var jobOffer = await _context.JobOfers
+            var jobOffer = await _context.JobOffers
                 .Include(j => j.Company)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (jobOffer == null)
@@ -154,15 +155,15 @@ namespace Winter_Classes_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var jobOffer = await _context.JobOfers.FindAsync(id);
-            _context.JobOfers.Remove(jobOffer);
+            var jobOffer = await _context.JobOffers.FindAsync(id);
+            _context.JobOffers.Remove(jobOffer);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool JobOfferExists(int id)
         {
-            return _context.JobOfers.Any(e => e.Id == id);
+            return _context.JobOffers.Any(e => e.Id == id);
         }
     }
 }

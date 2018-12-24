@@ -46,7 +46,7 @@
         <div>
             @Html.ActionLink("Edit", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" })
             @Html.ActionLink("Delete", "Delete", new { id = Model.Id }, new { @class = "btn btn-danger" })
-            @Html.ActionLink("Apply now", "Create", "JobApplications", new { OfferId = Model.Id, OfferName = Model.JobTitle }, new { @class = "btn btn-primary" })
+            @Html.ActionLink("Apply now", "Create", "JobApplications", new { OfferId = Model.Id }, new { @class = "btn btn-primary" })
         </div>
     </div>
     @Html.ActionLink("Go back to Job Offers", "Index", "JobOffers", null, new { @class = "btn btn-primary" })

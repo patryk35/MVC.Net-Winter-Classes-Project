@@ -1,4 +1,4 @@
-﻿@model IEnumerable<JobApplicationViews>
+﻿@model IEnumerable<JobApplication>
 
 <div class="row page-box">
     <div class="col-sm-12">
@@ -19,9 +19,8 @@
         <table class="table table-striped table-hover">
             <thead class="thead-dark">
                 <tr>
-                    <th scope="col">Offer</th>
+                    <th scope="col">Application</th>
                     <th scope="col">Email</th>
-                    <th scope="col">Person</th>
                     <th scope="col">Options</th>
                 </tr>
             </thead>
@@ -29,9 +28,8 @@
                 @foreach (var application in Model.OrderByDescending(o => o.Id))
                 {
                 <tr>
-                    <td>@Html.ActionLink(application.OfferName, "Details", new { id = application.Id })</td>
+                    <td><a href="@Url.Action("Details", "JobApplications", new { id = application.Id })"> @application.JobOffer.JobTitle @application.LastName @application.FirstName </a></td>
                     <td>@application.EmailAddress</td>
-                    <td>@application.LastName @application.FirstName</td>
                     <td>@Html.ActionLink("Edit", "Edit", new { id = application.Id }) @Html.ActionLink("Delete", "Delete", new { id = application.Id })</td>
                 </tr>
                 }

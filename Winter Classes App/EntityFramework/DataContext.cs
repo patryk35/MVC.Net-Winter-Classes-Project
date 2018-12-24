@@ -11,7 +11,7 @@ namespace Winter_Classes_App.EntityFramework
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
         public DbSet<JobApplication> JobApplications { get; set; }
-        public DbSet<JobOffer> JobOfers { get; set; }
+        public DbSet<JobOffer> JobOffers { get; set; }
         public DbSet<Company> Companies { get; set; }
     }
 }
