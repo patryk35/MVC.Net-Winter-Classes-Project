@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Winter_Classes_App.Controllers;
+﻿using Winter_Classes_App.Controllers;
 using CommunityCertForT.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Winter_Classes_App.Controllers;
-using Winter_Classes_App.Controllers;
 
 namespace CommunityCertForT.Controllers
 {
@@ -63,7 +57,6 @@ namespace CommunityCertForT.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                // Redirect to home page if the user is authenticated.
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 

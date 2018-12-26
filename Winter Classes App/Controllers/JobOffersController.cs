@@ -19,7 +19,6 @@ namespace Winter_Classes_App.Controllers
         {
             _context = context;
         }
-
         public async Task<IActionResult> Index([FromQuery(Name = "search")] string searchString) {
 
             if (String.IsNullOrEmpty(searchString))
@@ -75,7 +74,6 @@ namespace Winter_Classes_App.Controllers
                 model.Companies = _context.Companies;
                 return View(model);
             }
-            //var id = _context.JobOffers.Max(j => j.Id) + 1;
   
             JobOffer jobOffer = new JobOffer
             {

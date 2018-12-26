@@ -1,10 +1,12 @@
 ﻿+Wszystko na Bootstrapie - still to do layout
++Naprawić wyszukiwania
++Kontrola działania wszystkich funkcjonalności
++Job Applications nie dziala Edit - usuwa Id oferty
+
+Odpalic AD i dostosować do nich apke
 Dodawanie CV jako plik
 Dostosowanie formularzy - lepsze dopasowanie danych w nich 
 User allowed actions - po dodaniu AD
 Walidacja po stronie apki i js
-Naprawić wyszukiwania
 Po usunięciu firmy/oferty musi zostać zachowana z flagą usunięcia
-Kontrola działania wszystkich funkcjonalności
-Job Applications nie dziala Edit - usuwa Id oferty
 Create Offer -  zrobic jak w JobApplication
