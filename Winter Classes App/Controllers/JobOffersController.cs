@@ -55,11 +55,11 @@ namespace Winter_Classes_App.Controllers
             return View(jobOffer);
         }
 
-        public async Task<IActionResult> CreateAsync()
+        public async Task<IActionResult> Create()
         {
             PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
-            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            if (privilegesLevel < PrivilegesLevel.HR)
             {
                 return NotFound();
             }
@@ -76,7 +76,7 @@ namespace Winter_Classes_App.Controllers
         {
             PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
-            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            if (privilegesLevel < PrivilegesLevel.HR)
             {
                 return NotFound();
             }
