@@ -10,8 +10,8 @@ using Winter_Classes_App.EntityFramework;
 namespace WinterClassesApp.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20181124151112_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20181222222421_Refactorization1Migration")]
+    partial class Refactorization1Migration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -48,11 +48,9 @@ namespace WinterClassesApp.Migrations
 
                     b.Property<string>("FirstName");
 
-                    b.Property<int?>("JobOfferId");
+                    b.Property<int>("JobOfferId");
 
                     b.Property<string>("LastName");
-
-                    b.Property<int>("OfferId");
 
                     b.Property<string>("PhoneNumber");
 
@@ -96,9 +94,10 @@ namespace WinterClassesApp.Migrations
 
             modelBuilder.Entity("Winter_Classes_App.Models.JobApplication", b =>
                 {
-                    b.HasOne("Winter_Classes_App.Models.JobOffer")
-                        .WithMany("JobApplications")
-                        .HasForeignKey("JobOfferId");
+                    b.HasOne("Winter_Classes_App.Models.JobOffer", "JobOffer")
+                        .WithMany()
+                        .HasForeignKey("JobOfferId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Winter_Classes_App.Models.JobOffer", b =>

@@ -1,9 +1,9 @@
-﻿@model JobApplicationViews
+﻿@model JobApplication
 
 @{ ViewBag.Title = "Job Application";}
 
 <div class="row page-box">
-    <h1>@Model.LastName @Model.FirstName @Model.OfferName</h1>
+    <h1>@Model.LastName @Model.FirstName @Model.JobOffer.JobTitle</h1>
     <div class="col-sm-4">
         <div class="offer-details">
             <div>
@@ -16,7 +16,7 @@
             </div>
             <div>
                 <label>Offer:</label>
-                <span>@Model.OfferName</span>
+                <span>@Model.JobOffer.JobTitle</span>
             </div>
             <div>
                 <label>Phone Number:</label>

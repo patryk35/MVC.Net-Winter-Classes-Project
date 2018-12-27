@@ -1,36 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Winter_Classes_App.EntityFramework;
 using Winter_Classes_App.Models;
 
 namespace Winter_Classes_App.Controllers
 {
-    public class JobOffersController : Controller
+    public class JobOffersController : BaseController
     {
-        private readonly DataContext _context;
-
-        public JobOffersController(DataContext context)
-        {
-            _context = context;
-        }
+        public JobOffersController(IConfiguration Configuration, DataContext context) : base(Configuration, context) { }
 
         public async Task<IActionResult> Index([FromQuery(Name = "search")] string searchString) {
-
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
             if (String.IsNullOrEmpty(searchString))
             {
-                return View(await _context.JobOfers
+                return View(await _context.JobOffers
                     .Include(j => j.Company)
                     .ToListAsync()
                     );
             } else
             {
-                return View(await _context.JobOfers
+                return View(await _context.JobOffers
                    .Where(s => s.JobTitle.Contains(searchString) || s.Description.Contains(searchString))
                    .Include(j => j.Company)
                    .ToListAsync()
@@ -41,12 +36,15 @@ namespace Winter_Classes_App.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+
             if (id == null)
             {
                 return NotFound();
             }
 
-            var jobOffer = await _context.JobOfers
+            var jobOffer = await _context.JobOffers
                 .Include(j => j.Company)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (jobOffer == null)
@@ -57,8 +55,14 @@ namespace Winter_Classes_App.Controllers
             return View(jobOffer);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.HR)
+            {
+                return NotFound();
+            }
             var model = new JobOfferCreateView
             {
                 Companies = _context.Companies
@@ -70,12 +74,18 @@ namespace Winter_Classes_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(JobOfferCreateView model)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.HR)
+            {
+                return NotFound();
+            }
             if (!ModelState.IsValid)
             {
                 model.Companies = _context.Companies;
                 return View(model);
             }
-            var id = _context.JobOfers.Max(j => j.Id) + 1;
+  
             JobOffer jobOffer = new JobOffer
             {
                 CompanyId = model.CompanyId,
@@ -95,9 +105,15 @@ namespace Winter_Classes_App.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.HR)
+            {
+                return NotFound();
+            }
             if (id == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            var jobOffer = await _context.JobOfers.FindAsync(id);
+            var jobOffer = await _context.JobOffers.Include(j => j.Company).FirstOrDefaultAsync(m => m.Id == id);
             if (jobOffer == null) return new HttpStatusCodeResult(HttpStatusCode.NotFound);
             return View(jobOffer);
         }
@@ -106,8 +122,14 @@ namespace Winter_Classes_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(JobOffer model)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.HR)
+            {
+                return NotFound();
+            }
             if (!ModelState.IsValid) return View();
-            var jobOffer = await _context.JobOfers.FindAsync(model.Id);
+            var jobOffer = await _context.JobOffers.FindAsync(model.Id);
             jobOffer.JobTitle = model.JobTitle;
             jobOffer.Description = model.Description;
             jobOffer.SalaryFrom = model.SalaryFrom;
@@ -134,12 +156,18 @@ namespace Winter_Classes_App.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.HR)
+            {
+                return NotFound();
+            }
             if (id == null)
             {
                 return NotFound();
             }
 
-            var jobOffer = await _context.JobOfers
+            var jobOffer = await _context.JobOffers
                 .Include(j => j.Company)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (jobOffer == null)
@@ -154,15 +182,21 @@ namespace Winter_Classes_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var jobOffer = await _context.JobOfers.FindAsync(id);
-            _context.JobOfers.Remove(jobOffer);
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.HR)
+            {
+                return NotFound();
+            }
+            var jobOffer = await _context.JobOffers.FindAsync(id);
+            _context.JobOffers.Remove(jobOffer);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool JobOfferExists(int id)
         {
-            return _context.JobOfers.Any(e => e.Id == id);
+            return _context.JobOffers.Any(e => e.Id == id);
         }
     }
 }

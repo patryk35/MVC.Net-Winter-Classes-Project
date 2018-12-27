@@ -1,4 +1,4 @@
-﻿@model Winter_Classes_App.Models.JobApplicationViews
+﻿@model Winter_Classes_App.Models.JobApplication
 
 @{
     ViewData["Title"] = "Apply For Offer";
@@ -6,7 +6,7 @@
 
 <div class="row page-box">
     <div class="col-sm-12">
-        <h2>New Job Application: @Model.OfferName </h2>
+        <h2>New Job Application: @Model.JobOffer.JobTitle </h2>
         @using (Html.BeginForm("Create"))
         {
             @Html.AntiForgeryToken()
@@ -40,7 +40,7 @@
                 @Html.ValidationMessageFor(m => m.CvUrl, "", new { @class = "text-danger" })
             </div>
             <div class="form-group">
-                @Html.Hidden("OfferId")
+                @Html.Hidden("JobOfferId")
                 <button type="submit" class="btn btn-primary">Create</button>
             </div>
         }

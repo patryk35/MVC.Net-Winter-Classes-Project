@@ -1,27 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Winter_Classes_App.EntityFramework;
 using Winter_Classes_App.Models;
 
 namespace Winter_Classes_App.Controllers
 {
-    public class CompaniesController : Controller
+    public class CompaniesController : BaseController
     {
-        private readonly DataContext _context;
 
-        public CompaniesController(DataContext context)
-        {
-            _context = context;
-        }
+        public CompaniesController(IConfiguration Configuration, DataContext context) : base(Configuration, context) { }
 
         public async Task<IActionResult> Index([FromQuery(Name = "search")] string searchString)
         {
-
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.HR)
+            {
+                return NotFound();
+            }
             if (String.IsNullOrEmpty(searchString))
             {
                 return View(await _context.Companies.ToListAsync());
@@ -36,19 +36,27 @@ namespace Winter_Classes_App.Controllers
 
         }
 
-        // GET: Companies/Create
-        public IActionResult Create()
+        public async Task<IActionResult> CreateAsync()
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.ADMIN)
+            {
+                return NotFound();
+            }
             return View();
         }
 
-        // POST: Companies/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] Company company)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.ADMIN)
+            {
+                return NotFound();
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(company);
@@ -58,9 +66,14 @@ namespace Winter_Classes_App.Controllers
             return View(company);
         }
 
-        // GET: Companies/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.ADMIN)
+            {
+                return NotFound();
+            }
             if (id == null)
             {
                 return NotFound();
@@ -74,13 +87,16 @@ namespace Winter_Classes_App.Controllers
             return View(company);
         }
 
-        // POST: Companies/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Company company)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.ADMIN)
+            {
+                return NotFound();
+            }
             if (id != company.Id)
             {
                 return NotFound();
@@ -109,9 +125,14 @@ namespace Winter_Classes_App.Controllers
             return View(company);
         }
 
-        // GET: Companies/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.ADMIN)
+            {
+                return NotFound();
+            }
             if (id == null)
             {
                 return NotFound();
@@ -127,11 +148,16 @@ namespace Winter_Classes_App.Controllers
             return View(company);
         }
 
-        // POST: Companies/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.ADMIN)
+            {
+                return NotFound();
+            }
             var company = await _context.Companies.FindAsync(id);
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();

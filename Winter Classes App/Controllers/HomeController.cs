@@ -1,25 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using CommunityCertForT;
+using CommunityCertForT.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Winter_Classes_App.EntityFramework;
 using Winter_Classes_App.Models;
 
 namespace Winter_Classes_App.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
-        public IActionResult Index()
+        public HomeController(IConfiguration Configuration, DataContext context) : base(Configuration, context) { }
+        public async Task<IActionResult> Index()
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
             return View();
         }
 
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
     }
 }
