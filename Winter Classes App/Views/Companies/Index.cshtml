@@ -20,19 +20,28 @@
             <thead class="thead-dark">
                 <tr>
                     <th scope="col">Name</th>
-                    <th scope="col">Options</th>
+                    @if (ViewBag.PrivilegesLevel == 3)
+                    {
+                        <th scope="col">Options</th>
+                    }
                 </tr>
             </thead>
             <tbody>
                 @foreach (var company in Model.OrderBy(o => o.Name))
                 {
-                <tr>
-                    <td>@company.Name</td>
-                    <td>@Html.ActionLink("Edit", "Edit", new { id = company.Id }) @Html.ActionLink("Delete", "Delete", new { id = company.Id })</td>
-                </tr>
+                    <tr>
+                        <td>@company.Name</td>
+                        @if (ViewBag.PrivilegesLevel == 3)
+                        {
+                            <td>@Html.ActionLink("Edit", "Edit", new { id = company.Id }) @Html.ActionLink("Delete", "Delete", new { id = company.Id })</td>
+                        }
+                    </tr>
                 }
             </tbody>
         </table>
-        @Html.ActionLink("Add new company", "Create", "Companies", null, new { @class = "btn btn-primary" })
-    </div>
+        @if (ViewBag.PrivilegesLevel == 3)
+        {
+            @Html.ActionLink("Add new company", "Create", "Companies", null, new { @class = "btn btn-primary" })
+        }
+        </div>
 </div>

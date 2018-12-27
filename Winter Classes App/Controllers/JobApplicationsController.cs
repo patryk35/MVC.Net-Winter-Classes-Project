@@ -1,49 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using CommunityCertForT;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Winter_Classes_App.EntityFramework;
 using Winter_Classes_App.Models;
 
 namespace Winter_Classes_App.Controllers
 {
-    public class JobApplicationsController : Controller
+    public class JobApplicationsController : BaseController
     {
-        private readonly DataContext _context;
+        public JobApplicationsController(IConfiguration Configuration, DataContext context) : base(Configuration, context){}
 
-        public JobApplicationsController(DataContext context)
+        public async Task<IActionResult> Index([FromQuery(Name = "search")] string searchString)
         {
-            _context = context;
-        }
-
-        // GET: JobApplications
-        public async Task<IActionResult> Index()
-        {
-            List<JobApplication> jobApplications = await _context.JobApplications.ToListAsync();
-            List<JobOffer> applicationsOffers = await _context.JobOfers.ToListAsync();
-            List<JobApplicationViews> jobApplicationViews = new List<JobApplicationViews>();
-            foreach (JobApplication application in jobApplications) {
-                if (application != null){
-                    JobApplicationViews jobApplicationView = new JobApplicationViews(application);
-                    var offer = applicationsOffers.FirstOrDefault(m => m.Id == application.OfferId);
-                    if (offer != null)
-                    {
-                        jobApplicationView.OfferName = offer.JobTitle;
-                    } else
-                    {
-                        jobApplicationView.OfferName = "Offer is not available"; // to be removed
-                    }
-                    jobApplicationViews.Add(jobApplicationView);
-                }
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int) privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            } else if (privilegesLevel == PrivilegesLevel.LOGGEDIN)
+            {
+                return View(await _context.JobApplications
+                    .Include(j => j.JobOffer)
+                    .Where(j => j.EmailAddress == ((ClaimsIdentity)User.Identity).FindFirst("Emails").Value)
+                    .ToListAsync()
+    );
             }
-            return View(jobApplicationViews);
-        }
-
-        /*public async Task<IActionResult> Index([FromQuery(Name = "search")] string searchString)
-        {
 
             if (String.IsNullOrEmpty(searchString))
             {
@@ -54,92 +42,110 @@ namespace Winter_Classes_App.Controllers
             }
             else
             {
-                return View(await _context.JobOfers
-                   .Where(s => s.JobTitle.Contains(searchString) || s.Description.Contains(searchString))
-                   .Include(j => j.Company)
+                return View(await _context.JobApplications
+                   .Where(s => s.JobOffer.JobTitle.Contains(searchString) || s.LastName.Contains(searchString))
+                   .Include(j => j.JobOffer)
                    .ToListAsync()
                    );
             }
 
-        }*/
+        }
 
-
-
-        // GET: JobApplications/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel == PrivilegesLevel.NO_LOGGEDIN)
+            {
+                return NotFound();
+            }
+
             if (id == null)
             {
                 return NotFound();
             }
 
-            JobApplication jobApplication = await _context.JobApplications
+            var jobApplication = await _context.JobApplications
+                .Include(j => j.JobOffer)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            JobOffer applicationOffer = await _context.JobOfers
-                .FirstOrDefaultAsync(m => m.Id == jobApplication.OfferId);
-            if (jobApplication == null || applicationOffer == null)
+            if (jobApplication == null)
             {
                 return NotFound();
             }
-            JobApplicationViews jobApplicationViews = new JobApplicationViews(jobApplication);
-            jobApplicationViews.OfferName = applicationOffer.JobTitle;
-            return View(jobApplicationViews);
+
+            return View(jobApplication);
         }
 
-        // GET: JobApplications/Create
-        public IActionResult Create(int OfferId, string OfferName)
+        public async Task<IActionResult> Create(int OfferId)
         {
-            return View(new JobApplicationViews() { OfferId = OfferId, OfferName = OfferName });
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
+            var model = new JobApplication
+            {
+                JobOfferId = OfferId,
+                JobOffer = await _context.JobOffers.FirstOrDefaultAsync(m => m.Id == OfferId)
+            };
+            return View(model);
         }
 
-        // POST: JobApplications/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,OfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement,CvUrl")] JobApplicationViews jobApplicationViews)
+        public async Task<IActionResult> Create([Bind("Id,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement,CvUrl")] JobApplication jobApplication)
         {
-            if (ModelState.IsValid)
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
             {
-                _context.Add(jobApplicationViews);
+                return NotFound();
+            }
+
+            if (ModelState.IsValid || jobApplication.JobOfferId != 0)
+            {
+                _context.Add(jobApplication);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            JobOffer applicationOffer = await _context.JobOfers
-                .FirstOrDefaultAsync(m => m.Id == jobApplicationViews.OfferId);
-            jobApplicationViews.OfferName = applicationOffer.JobTitle;
-            return View(jobApplicationViews);
+            return View(jobApplication);
         }
 
-        // GET: JobApplications/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+            
             if (id == null)
-            {
-                return NotFound();
-            }
-
-            JobApplication jobApplication = await _context.JobApplications
-                .FirstOrDefaultAsync(m => m.Id == id);
-            JobOffer applicationOffer = await _context.JobOfers
-                .FirstOrDefaultAsync(m => m.Id == jobApplication.OfferId);
-            if (jobApplication == null || applicationOffer == null)
-            {
-                return NotFound();
-            }
-            JobApplicationViews jobApplicationViews = new JobApplicationViews(jobApplication);
-            jobApplicationViews.OfferName = applicationOffer.JobTitle;
-            return View(jobApplicationViews);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var jobApplication = await _context.JobApplications.Include(j => j.JobOffer).FirstOrDefaultAsync(o => o.Id == id);
+            if (jobApplication == null) return new HttpStatusCodeResult(HttpStatusCode.NotFound);
+            return View(jobApplication);
         }
 
-        // POST: JobApplications/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,OfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement,CvUrl")] JobApplicationViews jobApplicationViews)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,JobOffer,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement,CvUrl")] JobApplication jobApplication)
         {
-            if (id != jobApplicationViews.Id)
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
+            if (id != jobApplication.Id)
+            {
+                return NotFound();
+            }
+
+            if(jobApplication.JobOfferId == 0)
             {
                 return NotFound();
             }
@@ -148,12 +154,12 @@ namespace Winter_Classes_App.Controllers
             {
                 try
                 {
-                    _context.Update(jobApplicationViews);
+                    _context.Update(jobApplication);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!JobApplicationExists(jobApplicationViews.Id))
+                    if (!JobApplicationExists(jobApplication.Id))
                     {
                         return NotFound();
                     }
@@ -164,39 +170,45 @@ namespace Winter_Classes_App.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            JobOffer applicationOffer = await _context.JobOfers
-                .FirstOrDefaultAsync(m => m.Id == jobApplicationViews.OfferId);
-            jobApplicationViews.OfferName = applicationOffer.JobTitle;
-            return View(jobApplicationViews);
+            return View(jobApplication);
         }
 
-        // GET: JobApplications/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
             if (id == null)
             {
                 return NotFound();
             }
 
             JobApplication jobApplication = await _context.JobApplications
+                .Include(j => j.JobOffer)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            JobOffer applicationOffer = await _context.JobOfers
-                .FirstOrDefaultAsync(m => m.Id == jobApplication.OfferId);
-            if (jobApplication == null || applicationOffer == null)
+            if (jobApplication == null)
             {
                 return NotFound();
             }
-            JobApplicationViews jobApplicationViews = new JobApplicationViews(jobApplication);
-            jobApplicationViews.OfferName = applicationOffer.JobTitle;
-            return View(jobApplicationViews);
+            return View(jobApplication);
         }
 
-        // POST: JobApplications/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var jobApplication = await _context.JobApplications.FindAsync(id);
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
+            var jobApplication = await _context.JobApplications.Include(j => j.JobOffer).FirstOrDefaultAsync(j => j.Id == id);
             _context.JobApplications.Remove(jobApplication);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

@@ -38,6 +38,9 @@
                 }
             </tbody>
         </table>
-        @Html.ActionLink("Create job offer", "Create", "JobOffers", null, new { @class = "btn btn-primary" })
+        @if (ViewBag.PrivilegesLevel > 1)
+        {
+            @Html.ActionLink("Create job offer", "Create", "JobOffers", null, new { @class = "btn btn-primary" })
+        }
     </div>
 </div>
