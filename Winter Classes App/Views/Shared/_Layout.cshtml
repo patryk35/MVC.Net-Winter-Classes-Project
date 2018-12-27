@@ -31,9 +31,15 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a asp-area="" asp-controller="JobOffers" asp-action="Index">Job Offers</a></li>
-                    <li><a asp-area="" asp-controller="Companies" asp-action="Index">Companies</a></li>
-                    <li><a asp-area="" asp-controller="JobApplications" asp-action="Index">Job Applications</a></li>
-                </ul>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @if (ViewBag.PrivilegesLevel > 1)
+                        {
+                            <li><a asp-area="" asp-controller="Companies" asp-action="Index">Companies</a></li>
+                        }
+                            <li><a asp-area="" asp-controller="JobApplications" asp-action="Index">Job Applications</a></li>
+                        }
+                    </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
         </div>

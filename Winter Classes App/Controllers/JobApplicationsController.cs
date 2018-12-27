@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using CommunityCertForT;
 using Microsoft.AspNetCore.Mvc;
@@ -11,29 +13,25 @@ using Winter_Classes_App.Models;
 
 namespace Winter_Classes_App.Controllers
 {
-    public class JobApplicationsController : Controller
+    public class JobApplicationsController : BaseController
     {
-        private readonly DataContext _context;
-        private IConfiguration _configuration;
-        private AppSettings AppSettings { get; set; }
-        public JobApplicationsController(IConfiguration Configuration, DataContext context)
-        {
-            _configuration = Configuration;
-            AppSettings = _configuration.GetSection("AppSettings").Get<AppSettings>();
-            _context = context;
-        }
+        public JobApplicationsController(IConfiguration Configuration, DataContext context) : base(Configuration, context){}
 
         public async Task<IActionResult> Index([FromQuery(Name = "search")] string searchString)
         {
-            /*AADGraph graph = new AADGraph(AppSettings);
-            string groupName = "Admins";
-            string groupId = AppSettings.AADGroups.FirstOrDefault(g => String.Compare(g.Name, groupName) == 0).Id;
-            bool isIngroup = await graph.IsUserInGroup(User.Claims, groupId);
-
-            if (isIngroup == false)
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int) privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.LOGGEDIN)
             {
                 return NotFound();
-            }*/
+            } else if (privilegesLevel == PrivilegesLevel.LOGGEDIN)
+            {
+                return View(await _context.JobApplications
+                    .Include(j => j.JobOffer)
+                    .Where(j => j.EmailAddress == ((ClaimsIdentity)User.Identity).FindFirst("Emails").Value)
+                    .ToListAsync()
+    );
+            }
 
             if (String.IsNullOrEmpty(searchString))
             {
@@ -55,6 +53,13 @@ namespace Winter_Classes_App.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel == PrivilegesLevel.NO_LOGGEDIN)
+            {
+                return NotFound();
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -73,6 +78,13 @@ namespace Winter_Classes_App.Controllers
 
         public async Task<IActionResult> Create(int OfferId)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
             var model = new JobApplication
             {
                 JobOfferId = OfferId,
@@ -85,6 +97,13 @@ namespace Winter_Classes_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement,CvUrl")] JobApplication jobApplication)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
             if (ModelState.IsValid || jobApplication.JobOfferId != 0)
             {
                 _context.Add(jobApplication);
@@ -96,6 +115,13 @@ namespace Winter_Classes_App.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+            
             if (id == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             var jobApplication = await _context.JobApplications.Include(j => j.JobOffer).FirstOrDefaultAsync(o => o.Id == id);
@@ -107,6 +133,13 @@ namespace Winter_Classes_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,JobOffer,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement,CvUrl")] JobApplication jobApplication)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
             if (id != jobApplication.Id)
             {
                 return NotFound();
@@ -142,6 +175,13 @@ namespace Winter_Classes_App.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -161,6 +201,13 @@ namespace Winter_Classes_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            PrivilegesLevel privilegesLevel = await CheckGroup();
+            ViewBag.PrivilegesLevel = (int)privilegesLevel;
+            if (privilegesLevel < PrivilegesLevel.LOGGEDIN)
+            {
+                return NotFound();
+            }
+
             var jobApplication = await _context.JobApplications.Include(j => j.JobOffer).FirstOrDefaultAsync(j => j.Id == id);
             _context.JobApplications.Remove(jobApplication);
             await _context.SaveChangesAsync();

@@ -5,14 +5,20 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Winter_Classes_App.Models;
+using Winter_Classes_App.EntityFramework;
+using System.Threading.Tasks;
+using System;
 
 namespace CommunityCertForT.Controllers
 {
     public class SessionController : Controller
     {
-        public SessionController(IOptions<AzureAdB2COptions> b2cOptions)
+        private readonly DataContext _context;
+        public SessionController(IOptions<AzureAdB2COptions> b2cOptions, DataContext context)
         {
             AzureAdB2COptions = b2cOptions.Value;
+            _context = context;
         }
 
         public AzureAdB2COptions AzureAdB2COptions { get; set; }
@@ -53,11 +59,21 @@ namespace CommunityCertForT.Controllers
         }
 
         [HttpGet]
-        public IActionResult SignedOut()
+        public async Task<IActionResult> SignedOut()
         {
+
             if (User.Identity.IsAuthenticated)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+            if (Request.Cookies["session"] != null)
+            {
+                Session session = await _context.Session.FindAsync(Guid.Parse(Request.Cookies["session"]));
+                if(session == null)
+                {
+                    _context.Remove(session);
+                }
+                Response.Cookies.Delete("session");
             }
 
             return View();
