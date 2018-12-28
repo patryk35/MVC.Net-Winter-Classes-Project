@@ -30,7 +30,3 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-trigger:
-  branches:
-    include:
-    - release/*
