@@ -9,6 +9,7 @@ namespace Winter_Classes_App.Models
     {
         public int Id { get; set; }
         public virtual JobOffer JobOffer { get; set; }
+        public string UserImage { get; set; }
         public virtual int JobOfferId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }

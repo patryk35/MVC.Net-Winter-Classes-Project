@@ -5,9 +5,12 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using CommunityCertForT;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Winter_Classes_App.EntityFramework;
 using Winter_Classes_App.Models;
 
@@ -95,7 +98,7 @@ namespace Winter_Classes_App.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement,CvUrl")] JobApplication jobApplication)
+        public async Task<IActionResult> Create(IFormFile photoFile, IFormFile cvFile, [Bind("Id,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement")] JobApplication jobApplication)
         {
             PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
@@ -104,8 +107,57 @@ namespace Winter_Classes_App.Controllers
                 return NotFound();
             }
 
+            if (cvFile == null || cvFile.Length == 0)
+                return View(jobApplication);
+
+           if (photoFile == null || photoFile.Length == 0)
+                return View(jobApplication);
+
             if (ModelState.IsValid || jobApplication.JobOfferId != 0)
             {
+                string connectionString = "DefaultEndpointsProtocol=https;AccountName=picturesstorage0pm0ja;AccountKey=G1cR4nj5zRNCE6HO/WOnxTyyCKUzfyYq0FqLNgY/JFs6siFKmNVpiBOwzvX38Li1mEJ+G39WBj4Ni2SaGUsPPg==;EndpointSuffix=core.windows.net";
+
+                CloudStorageAccount storageAccount = null;
+                if (CloudStorageAccount.TryParse(connectionString, out storageAccount))
+                {
+                    CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
+
+                    // Get reference to the blob container by passing the name by reading the value from the configuration (appsettings.json)
+                    CloudBlobContainer cvContainer = cloudBlobClient.GetContainerReference("applications");
+                    CloudBlobContainer photosContainer = cloudBlobClient.GetContainerReference("photos");
+                    
+                    string cvExtention = cvFile.FileName.Split(".").Last();
+                    string photoExtention = photoFile.FileName.Split(".").Last();
+                    // Get the reference to the block blob from the container
+                    CloudBlockBlob cvBlockBlob = cvContainer.GetBlockBlobReference(Guid.NewGuid().ToString() + "." + cvExtention);
+                    CloudBlockBlob photosBlockBlob = photosContainer.GetBlockBlobReference(Guid.NewGuid().ToString() + "." + photoExtention);
+
+
+                    // Upload the files
+                    using (var fileStream = cvFile.OpenReadStream())
+                    {
+                        await cvBlockBlob.UploadFromStreamAsync(fileStream);
+                    }
+
+                    if (cvBlockBlob.Uri == null)
+                    {
+                        return View(jobApplication);
+                    }
+                    jobApplication.CvUrl = cvBlockBlob.Name;
+
+
+                    using (var fileStream = photoFile.OpenReadStream())
+                    {
+                        await photosBlockBlob.UploadFromStreamAsync(fileStream);
+                    }
+
+                    if (photosBlockBlob.Uri == null)
+                    {
+                        return View(jobApplication);
+                    }
+                    jobApplication.UserImage = photosBlockBlob.Name;
+                }
+                
                 _context.Add(jobApplication);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -131,7 +183,7 @@ namespace Winter_Classes_App.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,JobOffer,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement,CvUrl")] JobApplication jobApplication)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,JobOffer,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement")] JobApplication jobApplication)
         {
             PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
