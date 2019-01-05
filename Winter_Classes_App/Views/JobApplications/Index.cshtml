@@ -33,14 +33,7 @@
                 <tr>
                     <td><a href="@Url.Action("Details", "JobApplications", new { id = application.Id })"> @application.JobOffer.JobTitle @application.LastName @application.FirstName </a></td>
                     <td>@application.EmailAddress</td>
-                    @if (ViewBag.PrivilegesLevel > 1)
-                    {
-                        <td>@Html.ActionLink("Delete", "Delete", new { id = application.Id })</td>
-                    }
-                    else
-                    {
-                        <td>@Html.ActionLink("Edit", "Edit", new { id = application.Id }) | @Html.ActionLink("Delete", "Delete", new { id = application.Id })</td>
-                    }
+                    <td>@Html.ActionLink("Delete", "Delete", new { id = application.Id })</td>
                 </tr>
                 }
             </tbody>

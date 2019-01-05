@@ -14,25 +14,15 @@ namespace Winter_Classes_App.Controllers
 
         public CompaniesController(IConfiguration Configuration, DataContext context) : base(Configuration, context) { }
 
-        public async Task<IActionResult> Index([FromQuery(Name = "search")] string searchString)
+        public async Task<IActionResult> Index()
         {
             PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
             if (privilegesLevel < PrivilegesLevel.HR)
             {
-                return NotFound();
+                return Unauthorized();
             }
-            if (String.IsNullOrEmpty(searchString))
-            {
-                return View(await _context.Companies.ToListAsync());
-            }
-            else
-            {
-                return View(await _context.Companies
-                   .Where(s => s.Name.Contains(searchString))
-                   .ToListAsync()
-                   );
-            }
+            return View();
 
         }
 
@@ -42,28 +32,9 @@ namespace Winter_Classes_App.Controllers
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
             if (privilegesLevel != PrivilegesLevel.ADMIN)
             {
-                return NotFound();
+                return Unauthorized();
             }
             return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Company company)
-        {
-            PrivilegesLevel privilegesLevel = await CheckGroup();
-            ViewBag.PrivilegesLevel = (int)privilegesLevel;
-            if (privilegesLevel != PrivilegesLevel.ADMIN)
-            {
-                return NotFound();
-            }
-            if (ModelState.IsValid)
-            {
-                _context.Add(company);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(company);
         }
 
         public async Task<IActionResult> Edit(int? id)

@@ -2,6 +2,10 @@
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://localhost/Winter_Classes_App",
+      "sslPort": 0
+    },
     "iisExpress": {
       "applicationUrl": "http://localhost:51673",
       "sslPort": 44333

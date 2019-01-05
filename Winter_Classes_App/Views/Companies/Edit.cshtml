@@ -5,7 +5,7 @@
 <div class="row">
     <div class="col-sm-12">
         <h2>Edit Company Name</h2>
-        @using (Html.BeginForm("Edit"))
+        @using (Html.BeginForm("Edit", "Companies", FormMethod.Post, new { name = "formEdit", id = "formA" }))
         {
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.Id)
@@ -18,3 +18,25 @@
         }
     </div>
 </div>
+
+@section Scripts{
+
+    <script src="~/js/jquery.validate.min.js"></script>
+    <script>
+        /*Validation, which triggers ajax post whether everything is valid*/
+
+        $(function () {
+            $("form[name='formEdit']").validate({
+                rules: {
+                    Name: "required"
+                },
+                messages: {
+                    Name: "Please enter Name"
+                },
+                submitHandler: function (form) {
+                    return true;
+                }
+            });
+        });
+    </script>
+}

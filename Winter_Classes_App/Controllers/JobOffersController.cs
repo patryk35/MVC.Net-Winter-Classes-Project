@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Winter_Classes_App.EntityFramework;
 using Winter_Classes_App.Models;
+using Winter_Classes_App.Models.Paging.Models;
 
 namespace Winter_Classes_App.Controllers
 {
@@ -14,23 +15,10 @@ namespace Winter_Classes_App.Controllers
     {
         public JobOffersController(IConfiguration Configuration, DataContext context) : base(Configuration, context) { }
 
-        public async Task<IActionResult> Index([FromQuery(Name = "search")] string searchString) {
+        public async Task<IActionResult> Index() {
             PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
-            if (String.IsNullOrEmpty(searchString))
-            {
-                return View(await _context.JobOffers
-                    .Include(j => j.Company)
-                    .ToListAsync()
-                    );
-            } else
-            {
-                return View(await _context.JobOffers
-                   .Where(s => s.JobTitle.Contains(searchString) || s.Description.Contains(searchString))
-                   .Include(j => j.Company)
-                   .ToListAsync()
-                   );
-            }
+            return View();
 
         }
 
@@ -70,46 +58,13 @@ namespace Winter_Classes_App.Controllers
             return View(model);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(JobOfferCreateView model)
-        {
-            PrivilegesLevel privilegesLevel = await CheckGroup();
-            ViewBag.PrivilegesLevel = (int)privilegesLevel;
-            if (privilegesLevel < PrivilegesLevel.HR)
-            {
-                return NotFound();
-            }
-            if (!ModelState.IsValid)
-            {
-                model.Companies = _context.Companies;
-                return View(model);
-            }
-  
-            JobOffer jobOffer = new JobOffer
-            {
-                CompanyId = model.CompanyId,
-                Company = _context.Companies.FirstOrDefault(c => c.Id == model.CompanyId),
-                Description = model.Description,
-                JobTitle = model.JobTitle,
-                Location = model.Location,
-                SalaryFrom = model.SalaryFrom,
-                SalaryTo = model.SalaryTo,
-                ValidUntil = model.ValidUntil,
-                Created = DateTime.Now
-            };
-            _context.Add(jobOffer);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
-        }
-
         public async Task<IActionResult> Edit(int? id)
         {
             PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
             if (privilegesLevel < PrivilegesLevel.HR)
             {
-                return NotFound();
+                return Unauthorized();
             }
             if (id == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -117,6 +72,7 @@ namespace Winter_Classes_App.Controllers
             if (jobOffer == null) return new HttpStatusCodeResult(HttpStatusCode.NotFound);
             return View(jobOffer);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -145,10 +101,6 @@ namespace Winter_Classes_App.Controllers
                 if (!JobOfferExists(jobOffer.Id))
                 {
                     return NotFound();
-                }
-                else
-                {
-                    throw;
                 }
             }
             return RedirectToAction("Details", new { id = model.Id });

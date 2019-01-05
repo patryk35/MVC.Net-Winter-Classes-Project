@@ -14,6 +14,7 @@ using Winter_Classes_App.EntityFramework;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using CommunityCertForT;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace Winter_Classes_App
 {
@@ -41,6 +42,10 @@ namespace Winter_Classes_App
             services.AddMemoryCache();
             services.AddDistributedMemoryCache();
             services.AddSession();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "Contacts API", Version = "v1" });
+            });
 
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -83,6 +88,12 @@ namespace Winter_Classes_App
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Contacts API V1");
+            });
+
         }
     }
 }
