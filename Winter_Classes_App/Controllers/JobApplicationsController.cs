@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -38,10 +39,7 @@ namespace Winter_Classes_App.Controllers
 
             if (String.IsNullOrEmpty(searchString))
             {
-                return View(await _context.JobApplications
-                    .Include(j => j.JobOffer)
-                    .ToListAsync()
-                    );
+                return View(new List<JobApplication>());
             }
             else
             {
@@ -100,6 +98,8 @@ namespace Winter_Classes_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(IFormFile photoFile, IFormFile cvFile, [Bind("Id,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement")] JobApplication jobApplication)
         {
+
+            jobApplication.JobOffer = await _context.JobOffers.FirstOrDefaultAsync(m => m.Id == jobApplication.JobOfferId);
             PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
             if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
@@ -107,11 +107,20 @@ namespace Winter_Classes_App.Controllers
                 return NotFound();
             }
 
-            if (cvFile == null || cvFile.Length == 0)
+            if (cvFile == null || cvFile.Length == 0 || cvFile.FileName.Split(".").Last() != "pdf")
+            {
+                ViewBag.CvError = "CV is required. Allowed formats: .pdf";
                 return View(jobApplication);
+            }
 
-           if (photoFile == null || photoFile.Length == 0)
+
+
+            if (photoFile == null || photoFile.Length == 0)
+            {
+                ViewBag.PhotoError = "Photo is required";
                 return View(jobApplication);
+            }
+                
 
             if (ModelState.IsValid || jobApplication.JobOfferId != 0)
             {
@@ -141,6 +150,7 @@ namespace Winter_Classes_App.Controllers
 
                     if (cvBlockBlob.Uri == null)
                     {
+                        ViewBag.CvError = "CV cannot be uploaded. Try again later!";
                         return View(jobApplication);
                     }
                     jobApplication.CvUrl = cvBlockBlob.Name;
@@ -153,6 +163,7 @@ namespace Winter_Classes_App.Controllers
 
                     if (photosBlockBlob.Uri == null)
                     {
+                        ViewBag.PhotoError = "Photo cannot be uploaded. Try again later!";
                         return View(jobApplication);
                     }
                     jobApplication.UserImage = photosBlockBlob.Name;
@@ -165,65 +176,6 @@ namespace Winter_Classes_App.Controllers
             return View(jobApplication);
         }
 
-        public async Task<IActionResult> Edit(int? id)
-        {
-            PrivilegesLevel privilegesLevel = await CheckGroup();
-            ViewBag.PrivilegesLevel = (int)privilegesLevel;
-            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
-            {
-                return NotFound();
-            }
-            
-            if (id == null)
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            var jobApplication = await _context.JobApplications.Include(j => j.JobOffer).FirstOrDefaultAsync(o => o.Id == id);
-            if (jobApplication == null) return new HttpStatusCodeResult(HttpStatusCode.NotFound);
-            return View(jobApplication);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,JobOffer,JobOfferId,FirstName,LastName,PhoneNumber,EmailAddress,ContactAgreement")] JobApplication jobApplication)
-        {
-            PrivilegesLevel privilegesLevel = await CheckGroup();
-            ViewBag.PrivilegesLevel = (int)privilegesLevel;
-            if (privilegesLevel != PrivilegesLevel.LOGGEDIN)
-            {
-                return NotFound();
-            }
-
-            if (id != jobApplication.Id)
-            {
-                return NotFound();
-            }
-
-            if(jobApplication.JobOfferId == 0)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(jobApplication);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!JobApplicationExists(jobApplication.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(jobApplication);
-        }
 
         public async Task<IActionResult> Delete(int? id)
         {

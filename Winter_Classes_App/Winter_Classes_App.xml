@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Winter_Classes_App</name>
+    </assembly>
+    <members>
+        <member name="M:Winter_Classes_App.Controllers.Api.CompanyApiController.GetCompaniesAsync(System.String,System.Int32)">
+            <summary>
+            Creates a TodoItem.
+            </summary>
+        </member>
+        <member name="M:Winter_Classes_App.Controllers.Api.CompanyApiController.PostCompany(Winter_Classes_App.Models.Company)">
+            <summary>
+            Creates a TodoItem.
+            </summary>
+        </member>
+    </members>
+</doc>
