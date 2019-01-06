@@ -13,9 +13,15 @@ namespace Winter_Classes_App.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CompanyApiController : BaseApiController
+    public class CompanyApiController : ControllerBase
     {
-        public CompanyApiController(IConfiguration Configuration, DataContext context) : base(Configuration, context) { }
+        private readonly DataContext _context;
+
+        public CompanyApiController(DataContext context)
+        {
+            _context = context;
+
+        }
 
         [HttpGet]
         public async Task<PagingView> GetCompaniesAsync([FromQuery(Name = "searchString")]string searchString, [FromQuery(Name = "pageNo")]int pageNo = 1)
@@ -61,7 +67,7 @@ namespace Winter_Classes_App.Controllers.Api
         }
 
         [HttpGet("{id}")]
-        public async Task<Company> GetCompanysById(int id)
+        public Task<Company> GetCompanysById(int id)
         {
             /*PrivilegesLevel privilegesLevel = await CheckGroup();
             ViewBag.PrivilegesLevel = (int)privilegesLevel;
@@ -70,8 +76,8 @@ namespace Winter_Classes_App.Controllers.Api
                 return NotFound();
             }*/
 
-            var company = await _context.Companies
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var company = Task.FromResult(_context.Companies
+                .FirstOrDefault(m => m.Id == id));
             if (company == null)
             {
                 HttpContext.Response.StatusCode = 400; //not found
@@ -93,6 +99,11 @@ namespace Winter_Classes_App.Controllers.Api
             {
                 return Unauthorized();
             }*/
+            if (model == null)
+            {
+                throw new ArgumentNullException("Company can not be null");
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -114,6 +125,12 @@ namespace Winter_Classes_App.Controllers.Api
             {
                 return Unauthorized();
             }*/
+
+            if( company == null)
+            {
+                throw new NullReferenceException("Company can not be null");
+            }
+
             if (id != company.Id)
             {
                 return NotFound();
@@ -134,7 +151,7 @@ namespace Winter_Classes_App.Controllers.Api
                     }
                     else
                     {
-                        throw;
+                        throw new Exception("Company not exists");
                     }
                 }
                 return CreatedAtAction("Index", "CompaniesController", null, null);

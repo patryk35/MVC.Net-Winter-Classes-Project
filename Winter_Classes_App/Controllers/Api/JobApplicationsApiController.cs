@@ -16,9 +16,14 @@ namespace Winter_Classes_App.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class JobApplicationsApiController : BaseApiController
+    public class JobApplicationsApiController : ControllerBase
     {
-        public JobApplicationsApiController(IConfiguration Configuration, DataContext context) : base(Configuration, context) { }
+        protected readonly DataContext _context;
+
+        public JobApplicationsApiController(DataContext context)
+        {
+            _context = context;
+        }
 
         // GET: api/Users
         [HttpGet]

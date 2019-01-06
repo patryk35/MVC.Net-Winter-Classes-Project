@@ -13,9 +13,14 @@ namespace Winter_Classes_App.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class JobOffersApiController : BaseApiController
+    public class JobOffersApiController : ControllerBase
     {
-        public JobOffersApiController(IConfiguration Configuration, DataContext context) : base(Configuration, context) { }
+        protected readonly DataContext _context;
+
+        public JobOffersApiController(DataContext context)
+        {
+            _context = context;
+        }
 
         // GET: api/Users
         [HttpGet]
@@ -70,8 +75,8 @@ namespace Winter_Classes_App.Controllers.Api
                 return NotFound();
             }*/
 
-            var jobOffer = await _context.JobOffers
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var jobOffer = _context.JobOffers
+                .FirstOrDefault(m => m.Id == id);
             if (jobOffer == null)
             {
                 HttpContext.Response.StatusCode = 400; //not found
@@ -90,6 +95,12 @@ namespace Winter_Classes_App.Controllers.Api
             {
                 return Unauthorized();
             }*/
+
+            if (model == null)
+            {
+                throw new ArgumentNullException("JobOffer can not be null");
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

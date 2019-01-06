@@ -97,7 +97,6 @@ function onAddCompany(item) {
     console.log(options)
 
     options.success = function (msg) {
-        alert(msg.responseText);
        window.location.replace("http://jobofferspmdevelop.azurewebsites.net/Companies");
     },
         options.error = function (msg) {

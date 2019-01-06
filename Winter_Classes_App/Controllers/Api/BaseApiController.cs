@@ -17,17 +17,17 @@ namespace Winter_Classes_App.Controllers
     public class BaseApiController : ControllerBase
 
     {
-        protected IConfiguration _configuration;
+        //protected IConfiguration _configuration;
         protected AppSettings AppSettings { get; set; }
         protected readonly DataContext _context;
 
 
-        public BaseApiController(IConfiguration Configuration, DataContext context)
+        public BaseApiController(DataContext context)
 
         {
-            _configuration = Configuration;
+           // _configuration = Configuration;
             _context = context;
-            AppSettings = _configuration.GetSection("AppSettings").Get<AppSettings>();
+           // AppSettings = _configuration.GetSection("AppSettings").Get<AppSettings>();
         }
 
         /*public enum PrivilegesLevel { NO_LOGGEDIN = 0, LOGGEDIN = 1, HR = 2, ADMIN = 3 };
