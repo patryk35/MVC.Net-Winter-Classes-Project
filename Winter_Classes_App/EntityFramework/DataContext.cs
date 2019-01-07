@@ -10,9 +10,10 @@ namespace Winter_Classes_App.EntityFramework
     public class DataContext : DbContext
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
-        public DbSet<JobApplication> JobApplications { get; set; }
-        public DbSet<JobOffer> JobOffers { get; set; }
-        public DbSet<Company> Companies { get; set; }
-        public DbSet<Session> Session { get; set; }
+        public DataContext() { }
+        public virtual DbSet<JobApplication> JobApplications { get; set; }
+        public virtual DbSet<JobOffer> JobOffers { get; set; }
+        public virtual DbSet<Company> Companies { get; set; }
+        public virtual DbSet<Session> Session { get; set; }
     }
 }

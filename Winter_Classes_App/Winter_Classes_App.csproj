@@ -5,6 +5,8 @@
     <UserSecretsId>a04fb6bb-dc17-40bd-a3e3-8395c08bcaf3</UserSecretsId>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <StartupObject></StartupObject>
+    <ApplicationInsightsResourceId>/subscriptions/95808031-b0bd-4537-8b95-7f010e689126/resourcegroups/JobOfferApplication/providers/microsoft.insights/components/JobOffersPMDevelop</ApplicationInsightsResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/95808031-b0bd-4537-8b95-7f010e689126/resourcegroups/JobOfferApplication/providers/microsoft.insights/components/JobOffersPMDevelop</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -22,10 +24,16 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+	<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0-beta1" />
+
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>

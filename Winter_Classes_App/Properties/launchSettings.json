@@ -16,7 +16,8 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "8586204e-1488-44d9-9c45-70e6d7c20ae6"
       }
     },
     "Winter_Classes_App": {

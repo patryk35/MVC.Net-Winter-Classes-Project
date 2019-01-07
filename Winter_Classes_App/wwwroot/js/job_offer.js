@@ -25,7 +25,7 @@ function reload(api_uri, search = "") {
                 $table.append($header);
                 $.each(data.pagingModel, function (i, emp) {
                     var $row = $('<tr/>');
-                    $row.append($('<td/>').html("<a href='/JobOffers/Details/" + emp.id + "'>" + emp.jobTitle + "</a>"));
+                    $row.append($('<td/>').html("<a href='/JobOffers/Details/" + emp.id + "' id='offer_link'>" + emp.jobTitle + "</a>"));
                     $row.append($('<td/>').html(emp.company.name));
                     $row.append($('<td/>').html(emp.location));
                     $row.append($('<td/>').html(emp.validUntil));

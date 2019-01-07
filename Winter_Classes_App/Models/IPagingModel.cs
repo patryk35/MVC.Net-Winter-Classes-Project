@@ -7,5 +7,6 @@ namespace Winter_Classes_App.Models
 {
     public interface IPagingModel
     {
+        int Id { get; set; }
     }
 }

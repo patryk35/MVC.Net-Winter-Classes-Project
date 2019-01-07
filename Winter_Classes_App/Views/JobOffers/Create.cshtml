@@ -124,10 +124,12 @@
                     },
                     ValidUntil: "required",
                     SalaryFrom: {
-                        number: true
+                        number: true,
+                        minStrict: 0
                     },
                     SalaryTo: {
-                        number: true
+                        number: true,
+                        minStrict: 0
                     }
                 },
                 messages: {
@@ -139,10 +141,13 @@
                         minlength: "Description must consist of at least 100 characters"
                     },
                     SalaryFrom: {
-                        number: "Salary is number. Other chars are not allowed"
+                        number: "Salary is number. Other chars are not allowed",
+                        minStrict: "Value can not be below 0"
                     },
                     SalaryTo: {
-                        number: "Salary is number. Other chars are not allowed"
+                        number: "Salary is number. Other chars are not allowed",
+                        minStrict: "Value can not be below 0"
+
                     }
                 },
                 submitHandler: function (form, event) {

@@ -39,6 +39,7 @@ namespace Winter_Classes_App.Controllers
 
             if (String.IsNullOrEmpty(searchString))
             {
+                ViewBag.NotShow = "Appliied";
                 return View(new List<JobApplication>());
             }
             else

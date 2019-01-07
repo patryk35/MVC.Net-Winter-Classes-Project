@@ -26,7 +26,7 @@ function reload(api_uri, search = "") {
                 $.each(data.pagingModel, function (i, emp) {
                     var $row = $('<tr/>');
                     $row.append($('<td/>').html(emp.name));
-                    $row.append($('<td/>').html("<a href='/Companies/Edit/" + emp.id + "'>Edit</a> | <a href ='/Companies/Delete/" + emp.id + "'>Delete</a>"));
+                    $row.append($('<td/>').html("<a href='/Companies/Edit/" + emp.id + "'>Edit</a> | <a href ='/Companies/Delete/" + emp.id + "' id='company_link'>Delete</a>"));
                     $table.append($row);
                 });
 
@@ -97,7 +97,6 @@ function onAddCompany(item) {
     console.log(options)
 
     options.success = function (msg) {
-        alert(msg.responseText);
        window.location.replace("http://jobofferspmdevelop.azurewebsites.net/Companies");
     },
         options.error = function (msg) {
