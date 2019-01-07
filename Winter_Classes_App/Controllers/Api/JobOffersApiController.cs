@@ -101,6 +101,11 @@ namespace Winter_Classes_App.Controllers.Api
                 throw new ArgumentNullException("JobOffer can not be null");
             }
 
+            if (model.SalaryFrom > model.SalaryTo || model.SalaryTo <0 || model.SalaryFrom < 0)
+            {
+                return BadRequest(ModelState);
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
